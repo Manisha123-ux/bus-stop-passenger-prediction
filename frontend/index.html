@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bus Passenger Prediction</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe, #eef2ff);
+            color: #1e293b;
+            min-height: 100vh;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d4ed8;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid #93c5fd;
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: wait;
+        }
+
+        .result {
+            display: none;
+            margin-top: 25px;
+            padding: 22px;
+            background: #eff6ff;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+
+        .result h2 {
+            color: #1d4ed8;
+            margin-top: 0;
+        }
+
+        .count {
+            font-size: 38px;
+            font-weight: bold;
+            color: #15803d;
+            margin: 15px 0;
+        }
+
+        .message {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .error {
+            display: block;
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .note {
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🚌 Bus Passenger Prediction</h1>
+
+        <p class="subtitle">
+            Enter bus details to predict passenger demand.
+        </p>
+
+        <form id="predictionForm">
+
+            <div class="form-group">
+                <label for="bus_stop">Bus Stop</label>
+                <input
+                    type="text"
+                    id="bus_stop"
+                    value="College Bus Stop"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="hour">Hour (0–23)</label>
+                <input
+                    type="number"
+                    id="hour"
+                    min="0"
+                    max="23"
+                    value="8"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="weather">Weather</label>
+                <select id="weather" required>
+                    <option value="Clear">Clear</option>
+                    <option value="Cloudy">Cloudy</option>
+                    <option value="Rainy">Rainy</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="special_event">Special Event</label>
+                <select id="special_event">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="day_of_week">Day of Week</label>
+                <select id="day_of_week" required>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="is_weekend">Is Weekend?</label>
+                <select id="is_weekend">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="previous_passenger_count">
+                    Previous Passenger Count
+                </label>
+                <input
+                    type="number"
+                    id="previous_passenger_count"
+                    min="0"
+                    value="30"
+                    required
+                >
+            </div>
+
+            <button type="submit" id="predictButton">
+                Predict Passengers
+            </button>
+
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div id="result" class="result">
+            <h2>Prediction Result</h2>
+
+            <p>Predicted Passenger Count</p>
+
+            <div id="passengerCount" class="count">--</div>
+
+            <p>
+                Demand Level:
+                <strong id="demandLevel">--</strong>
+            </p>
+        </div>
+
+        <p class="note">
+            Educational demonstration using simulated training data.
+        </p>
+
+    </div>
+
+    <script>
+        const form = document.getElementById("predictionForm");
+        const button = document.getElementById("predictButton");
+        const message = document.getElementById("message");
+        const result = document.getElementById("result");
+
+        // Keep this URL consistent with your running backend.
+        const API_URL = "http://127.0.0.1:8000/predict";
+
+        // Keep the weekend flag consistent with the selected day.
+        const daySelect = document.getElementById("day_of_week");
+        const weekendSelect = document.getElementById("is_weekend");
+
+        daySelect.addEventListener("change", function () {
+            const isWeekend =
+                daySelect.value === "Saturday" ||
+                daySelect.value === "Sunday";
+
+            weekendSelect.value = isWeekend ? "1" : "0";
+        });
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            message.className = "message";
+            message.textContent = "";
+            result.style.display = "none";
+
+            const data = {
+                bus_stop: document.getElementById("bus_stop").value.trim(),
+                hour: Number(document.getElementById("hour").value),
+                weather: document.getElementById("weather").value,
+                special_event: Number(
+                    document.getElementById("special_event").value
+                ),
+                day_of_week: daySelect.value,
+                is_weekend: Number(weekendSelect.value),
+                previous_passenger_count: Number(
+                    document.getElementById(
+                        "previous_passenger_count"
+                    ).value
+                )
+            };
+
+            if (!data.bus_stop) {
+                message.textContent = "Please enter a bus stop.";
+                message.className = "message error";
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Predicting...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        responseData.detail
+                            ? JSON.stringify(responseData.detail)
+                            : "The prediction request failed."
+                    );
+                }
+
+                document.getElementById("passengerCount").textContent =
+                    responseData.predicted_passenger_count;
+
+                document.getElementById("demandLevel").textContent =
+                    responseData.demand_level;
+
+                result.style.display = "block";
+
+            } catch (error) {
+                message.textContent =
+                    "Could not get a prediction. Make sure the backend " +
+                    "is running and CORS is configured if needed. Details: " +
+                    error.message;
+
+                message.className = "message error";
+
+            } finally {
+                button.disabled = false;
+                button.textContent = "Predict Passengers";
+            }
+        });
+    </script>
+
+</body>
+</html>
